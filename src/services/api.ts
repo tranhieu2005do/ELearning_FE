@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_BASE_URL = "http://localhost:8080/api/v1";
 
 // Response types
 interface ApiResponse<T> {
@@ -32,13 +32,9 @@ interface RegisterResponse {
 
 // Error handling
 export class ApiError extends Error {
-  constructor(
-    public statusCode: number,
-    message: string,
-    public data?: any
-  ) {
+  constructor(public statusCode: number, message: string, public data?: any) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 
@@ -47,9 +43,9 @@ export const authApi = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(credentials),
       });
@@ -59,16 +55,16 @@ export const authApi = {
       if (!response.ok) {
         throw new ApiError(
           data.statusCode || response.status,
-          data.message || 'Login failed',
+          data.message || "Login failed",
           data.data
         );
       }
 
       // Store tokens in localStorage
       if (data.data) {
-        localStorage.setItem('accessToken', data.data.token);
-        localStorage.setItem('refreshToken', data.data.refreshToken);
-        localStorage.setItem('userEmail', data.data.email);
+        localStorage.setItem("accessToken", data.data.token);
+        localStorage.setItem("refreshToken", data.data.refreshToken);
+        localStorage.setItem("userEmail", data.data.email);
       }
 
       return data.data || ({} as LoginResponse);
@@ -76,16 +72,16 @@ export const authApi = {
       if (error instanceof ApiError) {
         throw error;
       }
-      throw new ApiError(500, 'Network error or server unavailable', error);
+      throw new ApiError(500, "Network error or server unavailable", error);
     }
   },
 
   register: async (userData: RegisterRequest): Promise<RegisterResponse> => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(userData),
       });
@@ -95,7 +91,7 @@ export const authApi = {
       if (!response.ok) {
         throw new ApiError(
           data.statusCode || response.status,
-          data.message || 'Registration failed',
+          data.message || "Registration failed",
           data.data
         );
       }
@@ -105,19 +101,21 @@ export const authApi = {
       if (error instanceof ApiError) {
         throw error;
       }
-      throw new ApiError(500, 'Network error or server unavailable', error);
+      throw new ApiError(500, "Network error or server unavailable", error);
     }
   },
 
   logout: async (hashRefreshToken: string): Promise<void> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/auth/logout?hashRefreshToken=${encodeURIComponent(hashRefreshToken)}`,
+        `${API_BASE_URL}/auth/logout?hashRefreshToken=${encodeURIComponent(
+          hashRefreshToken
+        )}`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         }
       );
@@ -127,31 +125,33 @@ export const authApi = {
       if (!response.ok) {
         throw new ApiError(
           data.statusCode || response.status,
-          data.message || 'Logout failed',
+          data.message || "Logout failed",
           data.data
         );
       }
 
       // Clear tokens from localStorage
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('userEmail');
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("userEmail");
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;
       }
-      throw new ApiError(500, 'Network error or server unavailable', error);
+      throw new ApiError(500, "Network error or server unavailable", error);
     }
   },
 
   verifyToken: async (accessToken: string): Promise<boolean> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/auth/verify-token?accessToken=${encodeURIComponent(accessToken)}`,
+        `${API_BASE_URL}/auth/verify-token?accessToken=${encodeURIComponent(
+          accessToken
+        )}`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
@@ -171,12 +171,14 @@ export const authApi = {
   refreshToken: async (hashRefreshToken: string): Promise<LoginResponse> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/auth/refresh?hashRefreshToken=${encodeURIComponent(hashRefreshToken)}`,
+        `${API_BASE_URL}/auth/refresh?hashRefreshToken=${encodeURIComponent(
+          hashRefreshToken
+        )}`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
         }
       );
@@ -186,15 +188,15 @@ export const authApi = {
       if (!response.ok) {
         throw new ApiError(
           data.statusCode || response.status,
-          data.message || 'Token refresh failed',
+          data.message || "Token refresh failed",
           data.data
         );
       }
 
       // Update tokens in localStorage
       if (data.data) {
-        localStorage.setItem('accessToken', data.data.token);
-        localStorage.setItem('refreshToken', data.data.refreshToken);
+        localStorage.setItem("accessToken", data.data.token);
+        localStorage.setItem("refreshToken", data.data.refreshToken);
       }
 
       return data.data || ({} as LoginResponse);
@@ -202,7 +204,7 @@ export const authApi = {
       if (error instanceof ApiError) {
         throw error;
       }
-      throw new ApiError(500, 'Network error or server unavailable', error);
+      throw new ApiError(500, "Network error or server unavailable", error);
     }
   },
 };
@@ -210,24 +212,24 @@ export const authApi = {
 // Utility functions for token management
 export const tokenUtils = {
   getAccessToken: (): string | null => {
-    return localStorage.getItem('accessToken');
+    return localStorage.getItem("accessToken");
   },
 
   getRefreshToken: (): string | null => {
-    return localStorage.getItem('refreshToken');
+    return localStorage.getItem("refreshToken");
   },
 
   getUserEmail: (): string | null => {
-    return localStorage.getItem('userEmail');
+    return localStorage.getItem("userEmail");
   },
 
   clearTokens: (): void => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('userEmail');
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("userEmail");
   },
 
   isAuthenticated: (): boolean => {
-    return !!localStorage.getItem('accessToken');
+    return !!localStorage.getItem("accessToken");
   },
 };
