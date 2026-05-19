@@ -6,6 +6,8 @@ import { Button } from "./components/ui/button";
 import { Checkbox } from "./components/ui/checkbox";
 import { EduBackground } from "./components/illustrations/EduBackground";
 import { authApi, ApiError } from "./services/api";
+import { OAuthCallback } from "./pages/OAuthCallback";
+import { Dashboard } from "./pages/Dashboard";
 
 function App() {
   const [email, setEmail] = useState("");
@@ -18,6 +20,12 @@ function App() {
   const [apiError, setApiError] = useState<string>("");
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [loginSuccess, setLoginSuccess] = useState(false);
+
+  const pathname = window.location.pathname;
+  const isDashboardPage = pathname === "/dashboard";
+  const isOAuthCallback =
+    pathname === "/oauth/callback" ||
+    new URLSearchParams(window.location.search).has("token");
 
   // Apply dark mode theme on mount and change
   useEffect(() => {
@@ -77,7 +85,43 @@ function App() {
     }
   };
 
-  return (
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      const googleAuthUrl = await authApi.getGoogleOAuthUrl();
+      window.location.href = googleAuthUrl;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setApiError(error.message);
+      } else {
+        setApiError("Failed to initiate Google login");
+      }
+      setIsLoading(false);
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    try {
+      setIsLoading(true);
+      const facebookAuthUrl = await authApi.getFacebookOAuthUrl();
+      window.location.href = facebookAuthUrl;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setApiError(error.message);
+      } else {
+        setApiError("Failed to initiate Facebook login");
+      }
+      setIsLoading(false);
+    }
+  };
+
+  if (isDashboardPage) {
+    return <Dashboard />;
+  }
+
+  return isOAuthCallback ? (
+    <OAuthCallback />
+  ) : (
     <div className="flex h-screen w-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300 overflow-hidden">
       {/* Immersive Left Side Background */}
       <EduBackground />
@@ -137,7 +181,9 @@ function App() {
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   <button
                     type="button"
-                    className="flex items-center justify-center gap-2 h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all font-medium text-sm text-slate-700 dark:text-slate-300 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    onClick={handleGoogleLogin}
+                    disabled={isLoading}
+                    className="flex items-center justify-center gap-2 h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all font-medium text-sm text-slate-700 dark:text-slate-300 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg
                       className="h-4 w-4"
@@ -165,7 +211,9 @@ function App() {
                   </button>
                   <button
                     type="button"
-                    className="flex items-center justify-center gap-2 h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all font-medium text-sm text-slate-700 dark:text-slate-300 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    onClick={handleFacebookLogin}
+                    disabled={isLoading}
+                    className="flex items-center justify-center gap-2 h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all font-medium text-sm text-slate-700 dark:text-slate-300 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg
                       className="h-4 w-4 text-slate-900 dark:text-white"

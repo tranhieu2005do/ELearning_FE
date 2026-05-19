@@ -32,9 +32,14 @@ interface RegisterResponse {
 
 // Error handling
 export class ApiError extends Error {
-  constructor(public statusCode: number, message: string, public data?: any) {
+  public statusCode: number;
+  public data?: any;
+
+  constructor(statusCode: number, message: string, data?: any) {
     super(message);
     this.name = "ApiError";
+    this.statusCode = statusCode;
+    this.data = data;
   }
 }
 
@@ -200,6 +205,50 @@ export const authApi = {
       }
 
       return data.data || ({} as LoginResponse);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(500, "Network error or server unavailable", error);
+    }
+  },
+
+  getGoogleOAuthUrl: async (): Promise<string> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/oauth/google-url`);
+      const data: ApiResponse<string> = await response.json();
+
+      if (!response.ok) {
+        throw new ApiError(
+          data.statusCode || response.status,
+          data.message || "Failed to get Google OAuth URL",
+          data.data
+        );
+      }
+
+      return data.data || "";
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(500, "Network error or server unavailable", error);
+    }
+  },
+
+  getFacebookOAuthUrl: async (): Promise<string> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/oauth/facebook-url`);
+      const data: ApiResponse<string> = await response.json();
+
+      if (!response.ok) {
+        throw new ApiError(
+          data.statusCode || response.status,
+          data.message || "Failed to get Facebook OAuth URL",
+          data.data
+        );
+      }
+
+      return data.data || "";
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;
