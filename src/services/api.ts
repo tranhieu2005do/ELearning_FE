@@ -256,6 +256,75 @@ export const authApi = {
       throw new ApiError(500, "Network error or server unavailable", error);
     }
   },
+  loginWithGoogleCode: async (code: string): Promise<LoginResponse> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/oauth/google`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code }),
+      });
+
+      const data: ApiResponse<LoginResponse> = await response.json();
+
+      if (!response.ok) {
+        throw new ApiError(
+          data.statusCode || response.status,
+          data.message || "Google OAuth Login failed",
+          data.data
+        );
+      }
+
+      if (data.data) {
+        localStorage.setItem("accessToken", data.data.token);
+        localStorage.setItem("refreshToken", data.data.refreshToken);
+        localStorage.setItem("userEmail", data.data.email);
+      }
+
+      return data.data || ({} as LoginResponse);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(500, "Network error or server unavailable", error);
+    }
+  },
+
+  loginWithFacebookCode: async (code: string): Promise<LoginResponse> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/oauth/facebook`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code }),
+      });
+
+      const data: ApiResponse<LoginResponse> = await response.json();
+
+      if (!response.ok) {
+        throw new ApiError(
+          data.statusCode || response.status,
+          data.message || "Facebook OAuth Login failed",
+          data.data
+        );
+      }
+
+      if (data.data) {
+        localStorage.setItem("accessToken", data.data.token);
+        localStorage.setItem("refreshToken", data.data.refreshToken);
+        localStorage.setItem("userEmail", data.data.email);
+      }
+
+      return data.data || ({} as LoginResponse);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(500, "Network error or server unavailable", error);
+    }
+  },
 };
 
 // Utility functions for token management

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { authApi } from "../services/api";
 
 export function OAuthCallback() {
   const [isProcessing, setIsProcessing] = useState(true);
@@ -8,33 +9,32 @@ export function OAuthCallback() {
     const processOAuthCallback = async () => {
       try {
         const params = new URLSearchParams(window.location.search);
-        const token = params.get("token");
-        const refreshToken = params.get("refreshToken");
-        const email = params.get("email");
-        const provider = params.get("provider");
-        const errorMsg = params.get("error");
+        const code = params.get("code");
+        const errorMsg = params.get("error") || params.get("oauth_error");
+        const pathname = window.location.pathname;
 
         if (errorMsg) {
           throw new Error(decodeURIComponent(errorMsg));
         }
 
-        if (!token || !refreshToken) {
+        if (code) {
+          if (pathname.includes("google")) {
+            await authApi.loginWithGoogleCode(code);
+          } else if (pathname.includes("facebook")) {
+            await authApi.loginWithFacebookCode(code);
+          } else {
+            throw new Error("Unknown OAuth provider from URL path");
+          }
+
+          console.log(`Successfully logged in via OAuth`);
+
+          // Redirect to homepage after OAuth success
+          setTimeout(() => {
+            window.location.replace("/");
+          }, 500);
+        } else {
           throw new Error("Missing authentication tokens from OAuth provider");
         }
-
-        // Store tokens in localStorage
-        localStorage.setItem("accessToken", token);
-        localStorage.setItem("refreshToken", refreshToken);
-        if (email) {
-          localStorage.setItem("userEmail", email);
-        }
-
-        console.log(`Successfully logged in with ${provider}`);
-
-        // Redirect to dashboard or home page
-        setTimeout(() => {
-          window.location.replace("/dashboard");
-        }, 500);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "OAuth login failed";
